@@ -166,13 +166,14 @@ class HMM:
             return states
 
 
+## load coin data and train Hidden Markov model
 def fit_coin():
             X = []
             for line in open("coin_data.txt"):
                 x = [1 if e == "M" else 0 for e in line.rstrip()]
                 X.append(x)
 
-
+            ## number of hidden states to 2 (head, or tail)
             hmm = HMM(2)
             hmm.fit(X)
             L= hmm.log_likelihood_multi(X).sum()
