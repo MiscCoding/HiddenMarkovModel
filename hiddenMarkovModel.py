@@ -131,30 +131,30 @@ class HMM:
 
     #
     def likelihood(self, x):
-            T = len(x)
+            T = len(x) # get length of x
             alpha = np.zeros((T, self.M))
             alpha[0] = self.pi * self.B[:, x[0]]
 
             for t in range(1, T):
-                alpha[t] = alpha[t-1].dot(self.A) * self.B[:, x[t]]
+                alpha[t] = alpha[t-1].dot(self.A) * self.B[:, x[t]] #update alpha
 
             return alpha[-1].sum()
 
 
-    def likelihood_multi(self, X):
+    def likelihood_multi(self, X): # calculate all the likelihoods of every observation
             return np.array([self.likelihood(x) for x in X])
 
     #log print
     def log_likelihood_multi(self, X):
-            return np.log(self.likelihood_multi(X))
+            return np.log(self.likelihood_multi(X)) #return logs above.
 
     #viterbi algorithms
-    def get_state_sequence(self, x):
+    def get_state_sequence(self, x): # takes in one observable sequence
             T = len(x)
-            delta = np.zeros((T, self.M))
-            psi = np.zeros((T, self.M))
-            delta[0] = self.pi * self.B[:, x[0]]
-            for t in range(1, T):
+            delta = np.zeros((T, self.M)) # size setup
+            psi = np.zeros((T, self.M))# size setup
+            delta[0] = self.pi * self.B[:, x[0]] #set an initial data
+            for t in range(1, T): # loop through every other time and all the states.
                 for j in range(self.M):
                     delta[t, j] = np.max(delta[t-1]*self.A[:,j] * self.B[j, x[t]])
                     psi[t, j] = np.argmax(delta[t-1]*self.A[:,j])
@@ -162,23 +162,23 @@ class HMM:
 
             #backtrack
             states = np.zeros(T, dtype= np.int32)
-            states[T-1] = np.argmax(delta[T-1])
-            for t in range(T-2, -1, -1):
-                states[t] = psi[t+1, states[t+1]]
+            states[T-1] = np.argmax(delta[T-1]) # argmax delta for the last one
+            for t in range(T-2, -1, -1): #loop through the rest of time in descending order
+                states[t] = psi[t+1, states[t+1]] # use psi which stores the states
             return states
 
 
 ## load coin data and train Hidden Markov model
 def fit_coin():
             X = []
-            for line in open("coin_data.txt"):
+            for line in open("coin_data.txt"): # loop through coin data.txt
                 x = [1 if e == "M" else 0 for e in line.rstrip()]
                 X.append(x)
 
-            ## number of hidden states to 2 (head, or tail)
+            ##creates an object and its number of hidden states to 2 (head, or tail)
             hmm = HMM(2)
             hmm.fit(X)
-            L= hmm.log_likelihood_multi(X).sum()
+            L= hmm.log_likelihood_multi(X).sum() # return likelihood and sum it cause they are separate.
 
             print("LL with fitted params: ", L)
 
@@ -189,7 +189,7 @@ def fit_coin():
             L = hmm.log_likelihood_multi(X).sum()
             print ("LL with true params:", L)
 
-            # try viterbi algorithms
+            # try viterbi algorithms to figure out the best state sequence
             print ("Best state sequence for: ", X[0])
             print (hmm.get_state_sequence(X[0]))
 
