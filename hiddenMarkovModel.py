@@ -13,11 +13,11 @@ class HMM:
         #this class gets number of hidden states in constructor
         self.M = M
 
-        #iteration limit is set by max_iter variable
+        #iteration limit is set by max_iter variable.
     def fit(self, X, max_iter=30):
 
         t0 = datetime.now()
-        np.random.seed(123)
+        np.random.seed(123)#test
         #
         # train the HMM model using the Baum-Welch algorithm
         # a specific instance of the expectation-maximization algorithm
@@ -49,13 +49,13 @@ class HMM:
             for n in range(N):
                 # x is nth observation
                 x = X[n]
-                # length of each little x
+                # T length of each little x
                 T = len(x)
 
-                alpha = np.zeros((T, self.M))
+                alpha = np.zeros((T, self.M)) #fill T by M matrix with zeros
                 # 1st value of alpha is pi * 1st observation
                 alpha[0] = self.pi*self.B[:,x[0]]
-                #
+                # loop through each after 1st observation
                 for t in range(1, T):
                     #
                     tmp1 = alpha[t-1].dot(self.A) * self.B[:, x[t]]
@@ -67,9 +67,9 @@ class HMM:
                 #beta is also T by M matrix
                 #beta counts backwards
                 beta = np.zeros((T, self.M))
-                beta[-1] = 1
+                beta[-1] = 1#initial value of beta is 1
                 for t in range(T - 2, -1, -1):
-                    beta[t] = self.A.dot(self.B[:, x[t+1]] * beta[t+1])
+                    beta[t] = self.A.dot(self.B[:, x[t+1]] * beta[t+1]) #calculate backwards
                 betas.append(beta)
 
 
@@ -102,18 +102,19 @@ class HMM:
 
                 # updating numerator for A
                 a_num_n = np.zeros((self.M, self.M))
-                for i in range(self.M):
+                for i in range(self.M): #looping through all states twice
                     for j in range(self.M):
-                        for t in range(T-1):
+                        for t in range(T-1): # and all times except the last one.
                             a_num_n[i,j] += alphas[n][t,i] * self.A[i,j] * self.B[j, x[t+1]] * betas[n][t+1,j]
-                a_num += a_num_n / P[n]
+                a_num += a_num_n / P[n]  # all it to the numerator
 
-
+                #updating numerator for B
                 b_num_n2 = np.zeros((self.M, V))
-                for i in range(self.M):
-                    for t in range(T):
-                        b_num_n2[i,x[t]] += alphas[n][t,i] * betas[n][t,i]
+                for i in range(self.M):# loop through every state
+                    for t in range(T): # loop through possible observation
+                        b_num_n2[i,x[t]] += alphas[n][t,i] * betas[n][t,i]#
                 b_num += b_num_n2 / P[n]
+
 
             self.A = a_num / den1
             self.B = b_num / den2
@@ -128,6 +129,7 @@ class HMM:
         plt.plot(costs)
         plt.show()
 
+    #
     def likelihood(self, x):
             T = len(x)
             alpha = np.zeros((T, self.M))
